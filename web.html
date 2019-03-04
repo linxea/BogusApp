@@ -37,7 +37,7 @@
     </div>
 
     <script src="./static/qrious.min.js"></script>
-    <script>
+    <script type="text/javascript">
       const url = "wss://bogusapp.herokuapp.com";
       const connection = new WebSocket(url);
 
@@ -88,7 +88,7 @@
         new QRious({
           element: document.getElementById("qrCode"),
           size: 300,
-          value: qrCode
+          value: `https://bogusapp.herokuapp.com/mobile?qrCode=${qrCode}`
         });
 
         console.log(`HERE'S MY QR CODE: ${qrCode}`);

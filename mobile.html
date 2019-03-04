@@ -48,10 +48,18 @@
     </div>
 
     <script type="text/javascript">
+      // Boohoo, the qrcode scanner doesn't work on phone, so use normal camera for phone!
+      (function() {
+        if (location.search.split("?qrCode=").length > 1) {
+          const qrCode = location.search.split("?qrCode=")[1];
+          requestQRCodeLogin(qrCode);
+        }
+      })();
       let scanner = new Instascan.Scanner({
         video: document.getElementById("qrCodeReader")
       });
-      scanner.addListener("scan", qrCode => {
+      scanner.addListener("scan", data => {
+        const qrCode = data.split("?qrCode=")[1];
         requestQRCodeLogin(qrCode);
       });
       Instascan.Camera.getCameras()
@@ -65,9 +73,7 @@
         .catch(function(e) {
           console.error(e);
         });
-    </script>
-    <h1 id="name"></h1>
-    <script>
+
       function requestQRCodeLogin(qrCode) {
         const url = "wss://bogusapp.herokuapp.com";
         const connection = new WebSocket(url);
