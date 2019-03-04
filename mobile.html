@@ -1,126 +1,165 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <style>
-      body {
-        font-family: monospace;
-        margin: 0;
-      }
 
-      h1 {
-        margin: 40vh auto;
-        width: 90%;
-        max-width: 500px;
-        display: none;
-      }
+<head>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      background-color: #f3f3f3;
+    }
 
-      #camera {
-        height: 100vh;
-        width: 100vw;
-        display: flex;
-        flex-direction: column;
-      }
+    #message {
+      margin: 40vh auto;
+      width: 90%;
+      max-width: 500px;
+      display: none;
+    }
 
-      #name {
-        width: 400px;
-        height: 50px;
-        font-size: 2rem;
-        margin: 100px auto 50px;
-        padding: 10px;
-      }
+    #camera-section {
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
 
-      #name::placeholder {
-        color: lightgray;
-      }
+    #name {
+      width: 90%;
+      max-width: 600px;
+      height: 50px;
+      font-size: 1.5rem;
+      margin-top: 50px;
+      padding: 5px 15px;
+    }
 
-      .message {
-        display: none;
-        margin: auto;
-      }
-    </style>
-    <script type="text/javascript" src="./static/instascan.min.js"></script>
-  </head>
-  <body>
-    <h1 id="message"></h1>
-    <div id="camera">
-      <input type="text" id="name" placeholder="Your Name" />
-      <video id="qrCodeReader"></video>
-    </div>
+    #name::placeholder {
+      color: lightgray;
+    }
 
-    <script type="text/javascript">
-      // Boohoo, the qrcode scanner doesn't work on phone, so use normal camera for phone!
-      (function() {
-        if (location.search.split("?qrCode=").length > 1) {
-          const qrCode = location.search.split("?qrCode=")[1];
-          requestQRCodeLogin(qrCode);
-        }
-      })();
-      let scanner = new Instascan.Scanner({
-        video: document.getElementById("qrCodeReader")
-      });
-      scanner.addListener("scan", data => {
-        const qrCode = data.split("?qrCode=")[1];
+    #qrCodeReader {
+      margin-top: 100px;
+      max-width: 400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    h1 {
+      font-weight: 500;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    p {
+      color: #afafaf;
+      max-width: 400px;
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    strong {
+      color: #171717;
+      font-weight: 500;
+    }
+  </style>
+  <script type="text/javascript" src="./static/instascan.min.js"></script>
+</head>
+
+<body>
+  <h1 id="message"></h1>
+  <div id="camera-section">
+    <h1>Scan Code</h1>
+    <p>Go to <a href="https://bogusapp.herokuapp.com/web" target="_blank"
+        rel="noopener noreferrer"><strong>https://bogusapp.herokuapp.com/web</strong></a> on
+      your computer and
+      scan the QR code</p>
+    <video id="qrCodeReader"></video>
+    <input type="text" id="name" placeholder="Your Name" />
+
+  </div>
+
+  <script type="text/javascript">
+    // Boohoo, the qrcode scanner doesn't work on phone, so use normal camera for phone!
+    (function () {
+      if (location.search.split("?qrCode=").length > 1) {
+        const qrCode = location.search.split("?qrCode=")[1];
         requestQRCodeLogin(qrCode);
-      });
-      Instascan.Camera.getCameras()
-        .then(function(cameras) {
-          if (cameras.length > 0) {
-            scanner.start(cameras[0]);
-          } else {
-            console.error("No cameras found.");
-          }
-        })
-        .catch(function(e) {
-          console.error(e);
-        });
-
-      function requestQRCodeLogin(qrCode) {
-        const url = "wss://bogusapp.herokuapp.com";
-        const connection = new WebSocket(url);
-        const nameElement = document.getElementById("name");
-        connection.onopen = () => {
-          const payload = {
-            action: "validate_qr_code",
-            username: nameElement.value || "noname",
-            qrCode
-          };
-
-          const payloadJSON = JSON.stringify(payload);
-          connection.send(payloadJSON);
-          console.log(`Send payload to websocket: ${payloadJSON}`);
-        };
-
-        connection.onerror = error => {
-          console.log(`WebSocket error: ${error}`);
-        };
-
-        connection.onmessage = event => {
-          console.log(`Receive message from websocket: ${event.data}`);
-
-          const response = JSON.parse(event.data);
-          const { action } = response;
-
-          switch (action) {
-            case "validated_qr_code":
-              const { username } = response;
-              const cameraElement = document.getElementById("camera");
-              const messageElement = document.getElementById("message");
-              cameraElement.style.display = "none";
-              messageElement.style.display = "block";
-              messageElement.innerHTML = `Woohoo 🎉, ${username} is now logged in to bogusweb!`;
-              connection.close();
-              break;
-            case "error":
-            default:
-              const { message } = response;
-              alert(message);
-          }
-        };
-
-        connection.onclose = () => {
-          console.log("WebSocket is closed.");
-        };
       }
-    </script>
-  </body>
+    })();
+    let scanner = new Instascan.Scanner({
+      video: document.getElementById("qrCodeReader")
+    });
+    scanner.addListener("scan", data => {
+      const qrCode = data.split("?qrCode=")[1];
+      requestQRCodeLogin(qrCode);
+    });
+    Instascan.Camera.getCameras()
+      .then(function (cameras) {
+        if (cameras.length > 0) {
+          scanner.start(cameras[0]);
+        } else {
+          console.error("No cameras found.");
+        }
+      })
+      .catch(function (e) {
+        console.error(e);
+      });
+
+    function requestQRCodeLogin(qrCode) {
+      const url = "wss://bogusapp.herokuapp.com";
+      const connection = new WebSocket(url);
+      const nameElement = document.getElementById("name");
+      connection.onopen = () => {
+        const payload = {
+          action: "validate_qr_code",
+          username: nameElement.value || "noname",
+          qrCode
+        };
+
+        const payloadJSON = JSON.stringify(payload);
+        connection.send(payloadJSON);
+        console.log(`Send payload to websocket: ${payloadJSON}`);
+      };
+
+      connection.onerror = error => {
+        console.log(`WebSocket error: ${error}`);
+      };
+
+      connection.onmessage = event => {
+        console.log(`Receive message from websocket: ${event.data}`);
+
+        const response = JSON.parse(event.data);
+        const { action } = response;
+
+        switch (action) {
+          case "validated_qr_code":
+            const { username } = response;
+            const cameraElement = document.getElementById("camera-section");
+            const messageElement = document.getElementById("message");
+            cameraElement.style.display = "none";
+            messageElement.style.display = "block";
+            messageElement.innerHTML = `Woohoo 🎉, ${username} is now logged in to bogusweb!`;
+            connection.close();
+            break;
+          case "error":
+          default:
+            const { message } = response;
+            alert(message);
+        }
+      };
+
+      connection.onclose = () => {
+        console.log("WebSocket is closed.");
+      };
+    }
+  </script>
+</body>
+
 </html>

@@ -1,110 +1,151 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <style>
-      body {
-        margin: 0;
-        display: flex;
-        width: 100vw;
-        height: 100vh;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-        font-family: monospace;
-      }
 
-      h1 {
-        margin-bottom: 4rem;
-      }
+<head>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      font-family: sans-serif;
+      background-image: linear-gradient(#1EBEA5, #dfdfdf 50%);
+    }
 
-      .qrCode {
-        width: 300px;
-        height: 300px;
-      }
+    h2 {
+      color: #55636B;
+      font-weight: 300;
+      font-size: 26px;
+      margin-bottom: 28px;
+    }
 
-      #name {
-        display: none;
-      }
-    </style>
-  </head>
-  <body>
-    <h1 id="name"></h1>
-    <div id="scan">
-      <h1>Scan QR Code to login</h1>
+    ol {
+      font-size: 16px;
+      color: #4b4b4b;
+      margin-bottom: 40px;
+    }
+
+    li {
+      line-height: 30px;
+    }
+
+    .qrCode {
+      width: 300px;
+      height: 300px;
+      margin: auto;
+    }
+
+    #name {
+      display: none;
+    }
+
+    #scan-section {
+      border-radius: 3px;
+      background-color: white;
+      padding: 50px 100px;
+      box-shadow: 0 17px 50px 0 rgba(0, 0, 0, 0.19), 0 12px 15px 0 rgba(0, 0, 0, 0.24);
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    strong {
+      color: #171717;
+      font-weight: 500;
+    }
+  </style>
+</head>
+
+<body>
+  <h1 id="name"></h1>
+  <div id="scan-section">
+    <h2>To use BogusApp on your computer:</h1>
+      <ol>
+        <li>Go to <a href="https://bogusapp.herokuapp.com/mobile" target="_blank"
+            rel="noopener noreferrer"><strong>https://bogusapp.herokuapp.com/mobile</strong></a></li>
+        <li>Enter your name and point the camera to this screen</li>
+        <li>If the camera can't work in the link, use your phone camera 😅</li>
+      </ol>
       <div class="qrCode">
         <canvas id="qrCode"></canvas>
       </div>
-    </div>
+  </div>
 
-    <script src="./static/qrious.min.js"></script>
-    <script type="text/javascript">
-      const url = "wss://bogusapp.herokuapp.com";
-      const connection = new WebSocket(url);
+  <script src="./static/qrious.min.js"></script>
+  <script type="text/javascript">
+    const url = "wss://bogusapp.herokuapp.com";
+    const connection = new WebSocket(url);
 
-      connection.onopen = () => {
-        const payload = {
-          action: "get_qr_code"
-        };
-
-        const payloadJSON = JSON.stringify(payload);
-        connection.send(payloadJSON);
-        console.log(`Send payload from websocket: ${payloadJSON}`);
+    connection.onopen = () => {
+      const payload = {
+        action: "get_qr_code"
       };
 
-      connection.onerror = error => {
-        console.log(`WebSocket error: ${error}`);
-      };
+      const payloadJSON = JSON.stringify(payload);
+      connection.send(payloadJSON);
+      console.log(`Send payload to server via websocket: ${payloadJSON}`);
+    };
 
-      connection.onmessage = event => {
-        console.log(`Receive data from websocket: ${event.data}`);
+    connection.onerror = error => {
+      console.log(`WebSocket error: ${error}`);
+    };
 
-        const response = JSON.parse(event.data);
-        const { action } = response;
+    connection.onmessage = event => {
+      console.log(`Receive data from server via websocket: ${event.data}`);
 
-        switch (action) {
-          case "get_qr_code":
-            const { qrCode } = response;
-            showQrCode(qrCode);
-            break;
-          case "validated_qr_code":
-            const { username } = response;
-            loginUser(username);
-            break;
-          case "error":
-          default:
-            if (response.message) {
-              alert(response.message);
-            } else {
-              alert("Something went wrong");
-            }
-        }
-      };
+      const response = JSON.parse(event.data);
+      const { action } = response;
 
-      connection.onclose = () => {
-        console.log("WebSocket is now closed.");
-      };
+      switch (action) {
+        case "get_qr_code":
+          const { qrCode } = response;
+          showQrCode(qrCode);
+          break;
+        case "validated_qr_code":
+          const { username } = response;
+          loginUser(username);
+          break;
+        case "error":
+        default:
+          if (response.message) {
+            alert(response.message);
+          } else {
+            alert("Something went wrong");
+          }
+      }
+    };
 
-      showQrCode = qrCode => {
-        new QRious({
-          element: document.getElementById("qrCode"),
-          size: 300,
-          value: `https://bogusapp.herokuapp.com/mobile?qrCode=${qrCode}`
-        });
+    connection.onclose = () => {
+      console.log("WebSocket is now closed.");
+    };
 
-        console.log(`HERE'S MY QR CODE: ${qrCode}`);
-      };
+    showQrCode = qrCode => {
+      new QRious({
+        element: document.getElementById("qrCode"),
+        size: 300,
+        value: `https://bogusapp.herokuapp.com/mobile?qrCode=${qrCode}`
+      });
 
-      loginUser = username => {
-        const scanElement = document.getElementById("scan");
-        const nameElement = document.getElementById("name");
+      console.log(`HERE'S MY QR CODE: ${qrCode}`);
+    };
 
-        scanElement.style.display = "none";
-        nameElement.style.display = "block";
-        nameElement.innerHTML = `Hello ${username}!`;
+    loginUser = username => {
+      const scanElement = document.getElementById("scan-section");
+      const nameElement = document.getElementById("name");
 
-        // You can now close the websocket.
-        connection.close();
-      };
-    </script>
-  </body>
+      scanElement.style.display = "none";
+      nameElement.style.display = "block";
+      nameElement.innerHTML = `Hello ${username}!`;
+
+      // You can now close the websocket.
+      connection.close();
+    };
+  </script>
+</body>
+
 </html>

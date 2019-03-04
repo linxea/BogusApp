@@ -8,11 +8,7 @@ const app = express();
 const server = http.createServer(app);
 
 // The URLs that we care
-app.get("/", (req, res) =>
-  res.send(
-    "Hello you are on the server, go to <a href='https://bogusapp.herokuapp.com/web'>web</a> or <a href='https://bogusapp.herokuapp.com/mobile'>mobile</a>"
-  )
-);
+app.get("/", (req, res) => res.sendFile(__dirname + "/index.html"));
 app.get("/web", (req, res) => res.sendFile(__dirname + "/web.html"));
 app.get("/mobile", (req, res) => res.sendFile(__dirname + "/mobile.html"));
 app.use("/static", express.static("public"));
