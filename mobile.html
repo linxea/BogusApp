@@ -1,46 +1,123 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<style>
-			body {
-				font-family: monospace;
-				margin: 0;
-				height: 100vh;
-				width: 100vw;
-				display: flex;
-			}
+  <head>
+    <style>
+      body {
+        font-family: monospace;
+        margin: 0;
+      }
 
-			h1 {
-				margin: auto;
-			}
-		</style>
-	</head>
-	<body>
-		<h1>test</h1>
-		<script>
-			const url = "ws://localhost:8080";
-			const connection = new WebSocket(url);
+      h1 {
+        margin: 40vh auto;
+        width: 90%;
+        max-width: 500px;
+        display: none;
+      }
 
-			connection.onopen = () => {
-				const payload = {
-					action: "validate_qr_code",
-					username: "linxea",
-					qrCode: "12345"
-				};
-				connection.send(JSON.stringify(payload));
-			};
+      #camera {
+        height: 100vh;
+        width: 100vw;
+        display: flex;
+        flex-direction: column;
+      }
 
-			connection.onerror = error => {
-				console.log(`WebSocket error: ${error}`);
-			};
+      #name {
+        width: 400px;
+        height: 50px;
+        font-size: 2rem;
+        margin: 100px auto 50px;
+        padding: 10px;
+      }
 
-			connection.onmessage = event => {
-				alert(event.data);
-			};
+      #name::placeholder {
+        color: lightgray;
+      }
 
-			connection.onclose = () => {
-				console.log("WebSocket is closed.");
-			};
-		</script>
-	</body>
+      .message {
+        display: none;
+        margin: auto;
+      }
+    </style>
+    <script
+      type="text/javascript"
+      src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"
+    ></script>
+  </head>
+  <body>
+    <h1 id="message"></h1>
+    <div id="camera">
+      <input type="text" id="name" placeholder="Your Name" />
+      <video id="qrCodeReader"></video>
+    </div>
+
+    <script type="text/javascript">
+      let scanner = new Instascan.Scanner({
+        video: document.getElementById("qrCodeReader")
+      });
+      scanner.addListener("scan", qrCode => {
+        requestQRCodeLogin(qrCode);
+      });
+      Instascan.Camera.getCameras()
+        .then(function(cameras) {
+          if (cameras.length > 0) {
+            scanner.start(cameras[0]);
+          } else {
+            console.error("No cameras found.");
+          }
+        })
+        .catch(function(e) {
+          console.error(e);
+        });
+    </script>
+    <h1 id="name"></h1>
+    <script>
+      function requestQRCodeLogin(qrCode) {
+        const url = "wss://bogusapp.herokuapp.com";
+        const connection = new WebSocket(url);
+        const nameElement = document.getElementById("name");
+        connection.onopen = () => {
+          const payload = {
+            action: "validate_qr_code",
+            username: nameElement.value || "noname",
+            qrCode
+          };
+
+          const payloadJSON = JSON.stringify(payload);
+          connection.send(payloadJSON);
+          console.log(`Send payload to websocket: ${payloadJSON}`);
+        };
+
+        connection.onerror = error => {
+          console.log(`WebSocket error: ${error}`);
+        };
+
+        connection.onmessage = event => {
+          console.log(`Receive message from websocket: ${event.data}`);
+
+          const response = JSON.parse(event.data);
+          const { action } = response;
+
+          switch (action) {
+            case "validated_qr_code":
+              const { username } = response;
+              const cameraElement = document.getElementById("camera");
+              const messageElement = document.getElementById("message");
+              cameraElement.style.display = "none";
+              messageElement.style.display = "block";
+              messageElement.innerHTML = `Woohoo 🎉, ${username} is now logged in to bogusweb!`;
+              connection.close();
+              break;
+            case "error":
+            default:
+              const { message } = response;
+              alert(message);
+          }
+        };
+
+        connection.onclose = () => {
+          console.log("WebSocket is closed.");
+        };
+      }
+    </script>
+  </body>
 </html>
