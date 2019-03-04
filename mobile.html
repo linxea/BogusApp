@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<style>
+			body {
+				font-family: monospace;
+				margin: 0;
+				height: 100vh;
+				width: 100vw;
+				display: flex;
+			}
+
+			h1 {
+				margin: auto;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>test</h1>
+		<script>
+			const url = "ws://localhost:8080";
+			const connection = new WebSocket(url);
+
+			connection.onopen = () => {
+				const payload = {
+					action: "validate_qr_code",
+					username: "linxea",
+					qrCode: "12345"
+				};
+				connection.send(JSON.stringify(payload));
+			};
+
+			connection.onerror = error => {
+				console.log(`WebSocket error: ${error}`);
+			};
+
+			connection.onmessage = event => {
+				alert(event.data);
+			};
+
+			connection.onclose = () => {
+				console.log("WebSocket is closed.");
+			};
+		</script>
+	</body>
+</html>

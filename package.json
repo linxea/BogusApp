@@ -1,0 +1,20 @@
+{
+	"name": "bogusapp",
+	"version": "1.0.0",
+	"description": "Mobile to web login using QR code",
+	"main": "server.js",
+	"scripts": {
+		"start": "node server.js",
+		"start-dev": "nodemon server.js"
+	},
+	"engines": {
+		"node": "8.11.1"
+	},
+	"author": "linxea",
+	"license": "ISC",
+	"dependencies": {
+		"nodemon": "^1.18.10",
+		"qrious": "~4.0.2",
+		"ws": "~6.1.4"
+	}
+}

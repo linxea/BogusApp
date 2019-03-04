@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<style>
+			body {
+				margin: 0;
+				display: flex;
+				width: 100vw;
+				height: 100vh;
+				align-items: center;
+				justify-content: center;
+				flex-direction: column;
+				font-family: monospace;
+			}
+
+			h1 {
+				margin-bottom: 4rem;
+			}
+
+			.qrCode {
+				width: 300px;
+				height: 300px;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Scan QR Code to login</h1>
+
+		<div class="qrCode">
+			<canvas id="qrCode"></canvas>
+		</div>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+		<script>
+			const url = "ws://localhost:8080";
+			const connection = new WebSocket(url);
+
+			connection.onopen = () => {
+				const payload = {
+					action: "get_qr_code"
+				};
+				connection.send(JSON.stringify(payload));
+			};
+
+			connection.onerror = error => {
+				console.log(`WebSocket error: ${error}`);
+			};
+
+			connection.onmessage = event => {
+				const response = event.data;
+				const { action } = JSON.parse(response);
+
+				switch (action) {
+					case "get_qr_code":
+						const { qrCode } = response;
+						showQrCode(qrCode);
+						break;
+					case "validated_qr_code":
+						loginUser(response);
+						break;
+					case "error":
+					default:
+						if (response.message) {
+							alert(response.message);
+						} else {
+							alert("Error with login");
+						}
+				}
+			};
+
+			connection.onclose = () => {
+				console.log("WebSocket is closed.");
+			};
+
+			showQrCode = qrCode => {
+				new QRious({
+					element: document.getElementById("qrCode"),
+					size: 300,
+					value: qrCode
+				});
+			};
+
+			loginUser = response => {
+				document.getElementById("qrCode").style = "display: none";
+			};
+		</script>
+	</body>
+</html>
