@@ -17,66 +17,20 @@
       margin: 40vh auto;
       width: 90%;
       max-width: 500px;
-      display: none;
-    }
-
-    #camera-section {
-      margin: auto;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    }
-
-    #name {
-      width: 90%;
-      max-width: 600px;
-      height: 50px;
-      font-size: 1.5rem;
-      margin-top: 50px;
-      padding: 5px 15px;
-    }
-
-    #name::placeholder {
-      color: lightgray;
-    }
-
-    #qrCodeReader {
-      margin-top: 100px;
-      max-width: 400px;
-      margin: 0 auto;
-      width: 100%;
+      text-align: center;
     }
 
     h1 {
       font-weight: 500;
     }
-
-    a {
-      text-decoration: none;
-      color: inherit;
-    }
-
-    p {
-      color: #afafaf;
-      max-width: 400px;
-      text-align: center;
-      margin-bottom: 40px;
-    }
-
-    strong {
-      color: #171717;
-      font-weight: 500;
-    }
   </style>
-  <script type="text/javascript" src="./static/instascan.min.js"></script>
 </head>
 
 <body>
   <h1 id="message">Logging you in... 😅</h1>
-
   <script type="text/javascript">
-    // Boohoo, the qrcode scanner doesn't work on phone, so use normal camera for phone!
+    // This page should be redirected from the camera, /mobile?qrCode=123
+    // If you are using mobile link, you should be redirected to /desktop-mobile with a QR Code scanner
     (function () {
       if (location.search.split("?qrCode=").length > 1) {
         const qrCode = location.search.split("?qrCode=")[1];
@@ -115,13 +69,16 @@
             const { username } = response;
             const messageElement = document.getElementById("message");
             messageElement.style.display = "block";
-            messageElement.innerHTML = `Woohoo 🎉, ${username} is now logged in to BogusWeb!`;
+            messageElement.innerHTML = `Woohoo 🎉, ${username} is now logged in to Web.BogusApp!`;
             connection.close();
             break;
           case "error":
           default:
             const { message } = response;
             alert(message);
+
+            // There's no retrying for this page so we can close the connection
+            connection.close();
         }
       };
 
