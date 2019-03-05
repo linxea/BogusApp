@@ -10,6 +10,7 @@ const server = http.createServer(app);
 // The URLs that we care
 app.get("/", (req, res) => res.sendFile(__dirname + "/index.html"));
 app.get("/web", (req, res) => res.sendFile(__dirname + "/web.html"));
+app.get("/desktop-mobile", (req, res) => res.sendFile(__dirname + "/desktop-mobile.html"));
 app.get("/mobile", (req, res) => res.sendFile(__dirname + "/mobile.html"));
 app.use("/static", express.static("public"));
 
