@@ -1,93 +1,197 @@
 <!DOCTYPE html>
 <html>
-
-<head>
-  <style>
-    body {
-      font-family: sans-serif;
-      margin: 0;
-      height: 100vh;
-      width: 100vw;
-      display: flex;
-      flex-direction: column;
-      background-color: #f3f3f3;
-    }
-
-    #message {
-      margin: 40vh auto;
-      width: 90%;
-      max-width: 500px;
-      text-align: center;
-    }
-
-    h1 {
-      font-weight: 500;
-    }
-  </style>
-</head>
-
-<body>
-  <h1 id="message">Logging you in... 😅</h1>
-  <h2 id="name"></h2>
-  <script type="text/javascript">
-    // This page should be redirected from the camera, /mobile?qrCode=123
-    // If you are using mobile link, you should be redirected to /desktop-mobile with a QR Code scanner
-    (function () {
-      if (location.search.split("?qrCode=").length > 1) {
-        const qrCode = location.search.split("?qrCode=")[1];
-        requestQRCodeLogin(qrCode);
+  <head>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 0;
+        height: 100vh;
+        width: 100vw;
+        display: flex;
+        flex-direction: column;
+        background-color: #f3f3f3;
       }
-    })();
 
-    function requestQRCodeLogin(qrCode) {
-      const url = "wss://bogusapp.herokuapp.com";
-      const connection = new WebSocket(url);
-      const nameElement = document.getElementById("name");
-      connection.onopen = () => {
-        const payload = {
-          action: "validate_qr_code",
-          username: nameElement.value || "noname",
-          qrCode
+      #message {
+        margin: 40vh auto;
+        width: 90%;
+        max-width: 500px;
+        display: none;
+      }
+
+      #camera-section {
+        margin: auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #name {
+        width: 90%;
+        max-width: 600px;
+        height: 50px;
+        font-size: 1.5rem;
+        margin-top: 50px;
+        padding: 5px 15px;
+      }
+
+      #name::placeholder {
+        color: lightgray;
+      }
+
+      #qrCodeReader {
+        margin-top: 100px;
+        max-width: 400px;
+        margin: 0 auto;
+        width: 100%;
+      }
+
+      h1 {
+        font-weight: 500;
+      }
+
+      a {
+        text-decoration: none;
+        color: inherit;
+      }
+
+      p {
+        color: #afafaf;
+        max-width: 400px;
+        text-align: center;
+        margin-bottom: 40px;
+      }
+
+      strong {
+        color: #171717;
+        font-weight: 500;
+      }
+    </style>
+    <script type="text/javascript" src="./static/jsQR.js"></script>
+  </head>
+
+  <body>
+    <h1 id="message"></h1>
+    <div id="camera-section">
+      <h1>Scan Code</h1>
+      <p>
+        Go to
+        <a
+          href="https://bogusapp.herokuapp.com/web"
+          target="_blank"
+          rel="noopener noreferrer"
+          ><strong>https://bogusapp.herokuapp.com/web</strong></a
+        >
+        on your computer and scan the QR code
+      </p>
+      <div id="loadingMessage">
+        🎥 Unable to access video stream (please make sure you have a webcam
+        enabled)
+      </div>
+      <canvas id="qrCodeReader" hidden></canvas>
+      <input type="text" id="name" placeholder="Enter Your Name, Stranger" />
+    </div>
+
+    <script type="text/javascript">
+      //  QR Code Scanner from https://github.com/cozmo/jsQR
+      const video = document.createElement("video");
+      const canvasElement = document.getElementById("qrCodeReader");
+      const canvas = canvasElement.getContext("2d");
+      const loadingMessage = document.getElementById("loadingMessage");
+
+      // Use facingMode: environment to attemt to get the front camera on phones
+      navigator.mediaDevices
+        .getUserMedia({ video: { facingMode: "environment" } })
+        .then(function(stream) {
+          video.srcObject = stream;
+          video.setAttribute("playsinline", true); // required to tell iOS safari we don't want fullscreen
+          video.play();
+          requestAnimationFrame(tick);
+        });
+
+      tick = () => {
+        loadingMessage.innerText = "⌛ Loading video...";
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+          loadingMessage.hidden = true;
+          canvasElement.hidden = false;
+
+          canvasElement.height = video.videoHeight;
+          canvasElement.width = video.videoWidth;
+          canvas.drawImage(
+            video,
+            0,
+            0,
+            canvasElement.width,
+            canvasElement.height
+          );
+          const imageData = canvas.getImageData(
+            0,
+            0,
+            canvasElement.width,
+            canvasElement.height
+          );
+          const data = jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: "dontInvert"
+          });
+
+          if (data) {
+            const url = data.data;
+            const qrCode = url.split("?qrCode=")[1];
+            requestQRCodeLogin(qrCode);
+          }
+        }
+        requestAnimationFrame(tick);
+      };
+
+      requestQRCodeLogin = qrCode => {
+        const localUrl = "ws://localhost:8080";
+        const url = "wss://bogusapp.herokuapp.com";
+        const connection = new WebSocket(localUrl);
+
+        connection.onopen = () => {
+          const nameElement = document.getElementById("name");
+          const payload = {
+            action: "validateQRCode",
+            username: nameElement.value || "Stranger",
+            qrCode
+          };
+
+          const payloadJSONString = JSON.stringify(payload);
+          connection.send(payloadJSONString);
+          console.log(`Send payload to websocket: ${payloadJSONString}`);
         };
 
-        const payloadJSON = JSON.stringify(payload);
-        connection.send(payloadJSON);
-        console.log(`Send payload to websocket: ${payloadJSON}`);
+        connection.onerror = error => {
+          console.log(`WebSocket error: ${error}`);
+        };
+
+        connection.onmessage = event => {
+          console.log(`Receive message from websocket: ${event.data}`);
+
+          const response = JSON.parse(event.data);
+          const { action } = response;
+
+          switch (action) {
+            case "verifiedAccount":
+              const { username } = response;
+              const cameraElement = document.getElementById("camera-section");
+              const messageElement = document.getElementById("message");
+              cameraElement.style.display = "none";
+              messageElement.style.display = "block";
+              messageElement.innerText = `Woohoo 🎉, ${username} is now logged in to BogusWeb!`;
+              connection.close();
+              break;
+            default:
+              const { message } = response;
+              alert(message);
+          }
+        };
+
+        connection.onclose = () => {
+          console.log("WebSocket is closed.");
+        };
       };
-
-      connection.onerror = error => {
-        console.log(`WebSocket error: ${error}`);
-      };
-
-      connection.onmessage = event => {
-        console.log(`Receive message from websocket: ${event.data}`);
-
-        const response = JSON.parse(event.data);
-        const { action } = response;
-
-        switch (action) {
-          case "validated_qr_code":
-            const { username } = response;
-            const messageElement = document.getElementById("message");
-            messageElement.style.display = "block";
-            messageElement.innerHTML = `Woohoo 🎉, ${username} is now logged in to Web.BogusApp!`;
-            connection.close();
-            break;
-          case "error":
-          default:
-            const { message } = response;
-            alert(message);
-
-            // There's no retrying for this page so we can close the connection
-            connection.close();
-        }
-      };
-
-      connection.onclose = () => {
-        console.log("WebSocket is closed.");
-      };
-    }
-  </script>
-</body>
-
+    </script>
+  </body>
 </html>
