@@ -145,9 +145,11 @@
       };
 
       requestQRCodeLogin = qrCode => {
+        // Use localUrl if you are testing locally
+        // For example, `const connection = new WebSocket(localUrl);`
         const localUrl = "ws://localhost:8080";
         const url = "wss://bogusapp.herokuapp.com";
-        const connection = new WebSocket(localUrl);
+        const connection = new WebSocket(url);
 
         connection.onopen = () => {
           const nameElement = document.getElementById("name");
