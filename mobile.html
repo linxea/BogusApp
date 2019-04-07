@@ -23,6 +23,7 @@
         width: 90%;
         max-width: 500px;
         display: none;
+        font-size: 4rem;
       }
 
       #camera-section {
@@ -193,7 +194,7 @@
               const messageElement = document.getElementById("message");
               cameraElement.style.display = "none";
               messageElement.style.display = "block";
-              messageElement.innerText = `${username} is now logged in! 🎉`;
+              messageElement.innerText = `Hello ${username}, you've successfully logged in! 🎉`;
               connection.close();
               break;
             default:
