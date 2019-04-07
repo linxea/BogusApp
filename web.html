@@ -47,9 +47,22 @@
     #name {
       display: none;
       font-size: 4rem;
-      background-color: rgba(255, 255, 255, 0.7);
       padding: 10px;
       border-radius: 3px;
+    }
+
+    #game {
+      display: none;
+      font-family: monospace;
+      border: 2px solid black;
+      border-radius: 5px;
+      padding: 15px;
+      font-size: 1.5rem;
+    }
+
+    #game:hover {
+      background: black;
+      color: white;
     }
 
     #scan-section {
@@ -73,7 +86,8 @@
 
 <body>
   <h1 id="name"></h1>
-  <div id="scan-section">
+  <a id="game" href="https://linxea.github.io/blackbox/">🤡 Do you want to play a game?</h2>
+  <div id="scan-section" style="display:none">
     <h2>To use BogusApp on your computer:</h1>
       <ol>
         <li>Go to <a href="https://bogusapp.herokuapp.com/mobile" target="_blank"
@@ -155,10 +169,12 @@
       // Hide the QR code and display username
       const scanElement = document.getElementById("scan-section");
       const nameElement = document.getElementById("name");
+      const gameElement = document.getElementById("game");
 
       scanElement.style.display = "none";
       nameElement.style.display = "block";
-      nameElement.innerHTML = `Hello ${username}! 💩`;
+      nameElement.innerHTML = `Hello ${username} 💩!`;
+      gameElement.style.display = "block";
 
       // You can now close the websocket.
       connection.close();
