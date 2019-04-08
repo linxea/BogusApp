@@ -39,12 +39,16 @@
         max-width: 600px;
         height: 50px;
         font-size: 1.5rem;
-        margin-top: 50px;
+        margin-bottom: 30px;
         padding: 5px 15px;
       }
 
       #name::placeholder {
         color: lightgray;
+      }
+
+      #loadingMessage {
+        height: 200px;
       }
 
       #qrCodeReader {
@@ -90,11 +94,11 @@
         >
         on your computer and scan the QR code.
       </p>
+      <input type="text" id="name" placeholder="Enter Your Name, Stranger" />
       <div id="loadingMessage">
         🎥 Unable to use camera. If you are using iPhone, please use Safari.
       </div>
       <canvas id="qrCodeReader" hidden></canvas>
-      <input type="text" id="name" placeholder="Enter Your Name, Stranger" />
     </div>
 
     <script type="text/javascript">
