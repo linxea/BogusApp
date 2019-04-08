@@ -19,7 +19,7 @@
       }
 
       #message {
-        margin: 40vh auto;
+        margin: 30vh auto;
         width: 90%;
         max-width: 500px;
         display: none;
@@ -103,6 +103,7 @@
 
     <script type="text/javascript">
       const usedQRCodes = [];
+      let isLoggedIn = false;
 
       // QR Code Scanner from https://github.com/cozmo/jsQR
       const video = document.createElement("video");
@@ -148,6 +149,8 @@
             const url = data.data;
             const qrCode = url.split("?qrCode=")[1];
 
+            // To prevent QR Code scanner from making duplicate calls with same qr code,
+            // we check if QR code exists in a usedQRCodes before making a call to verify.
             const isQRCodeUsed = usedQRCodes.includes(qrCode);
             if (!isQRCodeUsed) {
               requestQRCodeLogin(qrCode);
@@ -155,7 +158,10 @@
             }
           }
         }
-        requestAnimationFrame(tick);
+
+        if (!isLoggedIn) {
+          requestAnimationFrame(tick);
+        }
       };
 
       requestQRCodeLogin = qrCode => {
@@ -197,6 +203,9 @@
               messageElement.style.display = "block";
               messageElement.innerText = `Hello ${username}, you've successfully logged in! 🎉`;
               connection.close();
+
+              isLoggedIn = true;
+
               break;
             default:
               const { message } = response;

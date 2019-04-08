@@ -37,9 +37,10 @@ const wss = new WebSocket.Server({ server });
 
 wss.on("connection", ws => {
   // Create a unique id for each websocket connection
-  // For simplicity, like duh, the unique id will be our QR code
+  // For simplicity, the unique id (uuid) will be our QR code
   const uuid = uuidv4();
   validQRCodes.push(uuid);
+
   // Store each connection in an object so we can send response to the same connection
   webSocketConnections[uuid] = ws;
 
@@ -53,7 +54,7 @@ wss.on("connection", ws => {
         payload.qrCode = uuid;
         ws.send(JSON.stringify(payload));
 
-        logError({ action: payload.action, qrCode: payload.qrCode });
+        log({ action: payload.action, qrCode: payload.qrCode });
         break;
 
       case WebSocketActions.validateQRCode:
@@ -70,34 +71,41 @@ wss.on("connection", ws => {
           webSocketConnections[qrCode].send(payloadJSONString);
 
           // Remove QR Code from list and remove web connection
-          delete validQRCodes[validQRCodes.indexOf(qrCode)];
+          validQRCodes.splice([validQRCodes.indexOf(qrCode)], 1);
           delete webSocketConnections[qrCode];
 
-          logError({ action: payload.action, qrCode, username });
+          log({ action: payload.action, qrCode, username });
         } else {
           payload.action = WebSocketActions.invalidQRCode;
           payload.message = ErrorMessages.invalidQRCode;
           // Update mobile connection that QR code is invalid
           ws.send(JSON.stringify(payload));
 
-          logError({ action: payload.action, qrCode });
+          log({ action: payload.action, qrCode });
         }
         break;
 
       default:
-        // Handle invalid action
         payload.action = WebSocketActions.invalidAction;
         payload.message = ErrorMessages.genericError;
         ws.send(JSON.stringify(action));
 
-        logError({ action: payload.action, qrCode });
+        log({ action: payload.action, qrCode });
     }
+  });
+
+  ws.on("close", (code, reason) => {
+    validQRCodes.splice([validQRCodes.indexOf(uuid)], 1);
+    delete webSocketConnections[uuid];
+    console.log(
+      `Websocket connection is closed, status code ${code}, request: ${reason}, uuid: ${uuid}`
+    );
   });
 });
 
-function logError({ action = "", qrCode = "", username = "" }) {
+const log = ({ action = "", qrCode = "", username = "" }) => {
   const actionString = action && `Action: ${action}`;
   const qrCodeString = qrCode && `QR Code: ${qrCode}`;
   const usernameString = username && `Username: ${username}`;
-  console.log(`${actionString} ${qrCodeString} ${usernameString}`);
-}
+  console.log(`${actionString}, ${qrCodeString} ${usernameString}`);
+};

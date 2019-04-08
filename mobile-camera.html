@@ -30,15 +30,8 @@
   </head>
 
   <body>
-    <h1 id="message">logging you in from your camera...</h1>
+    <h1 id="message">Logging you in from your camera...</h1>
     <script type="text/javascript">
-      (() => {
-        if (location.search.split("?qrCode=").length > 1) {
-          const qrCode = location.search.split("?qrCode=")[1];
-          requestQRCodeLogin(qrCode);
-        }
-      })();
-
       requestQRCodeLogin = qrCode => {
         const host = location.host;
         const isLocal = host.includes("localhost");
@@ -55,7 +48,7 @@
 
           const payloadJSON = JSON.stringify(payload);
           connection.send(payloadJSON);
-          console.log(`Send payload to websocket: ${payloadJSON}`);
+          console.log(`Validate QR Code via websocket: ${payloadJSON}`);
         };
 
         connection.onerror = error => {
@@ -63,7 +56,7 @@
         };
 
         connection.onmessage = event => {
-          console.log(`Receive message from websocket: ${event.data}`);
+          console.log(`Receive data from server via websocket: ${event.data}`);
 
           const messageElement = document.getElementById("message");
           const response = JSON.parse(event.data);
@@ -74,20 +67,32 @@
               const { username } = response;
               messageElement.innerText = `Woohoo 🎉, hello ${username}!!!`;
               break;
+            case "invalidQRCode":
+            case "genericError":
             default:
-              const { message } = response;
-              console.log(message);
-              messageElement.innerText = "Opps, there's an error. 😳";
+              messageElement.innerText = response.message;
           }
 
           // There's no retrying for this page so we can close the connection
-          connection.close();
+          // Send close code with requester name
+          // To know more on close status code: https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent#Status_codes
+          connection.close(1000, "client");
         };
 
-        connection.onclose = () => {
-          console.log("WebSocket is closed.");
+        connection.onclose = event => {
+          console.log(`WebSocket is closed by ${event.reason}`);
         };
       };
+
+      (() => {
+        if (location.search.split("?qrCode=").length > 1) {
+          const qrCode = location.search.split("?qrCode=")[1];
+          requestQRCodeLogin(qrCode);
+        } else {
+          const messageElement = document.getElementById("message");
+          messageElement.innerText = "whut, you should not be here.";
+        }
+      })();
     </script>
   </body>
 </html>

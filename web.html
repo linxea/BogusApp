@@ -116,7 +116,7 @@
       const payloadJSON = JSON.stringify(payload);
       connection.send(payloadJSON);
 
-      console.log(`Send payload to server via websocket: ${payloadJSON}`);
+      console.log(`Request QR Code from server via websocket: ${payloadJSON}`);
     };
 
     connection.onmessage = event => {
@@ -150,8 +150,8 @@
       console.log(`WebSocket error: ${error}`);
     };
 
-    connection.onclose = () => {
-      console.log("WebSocket is now closed.");
+    connection.onclose = (code, reason) => {
+      console.log(`WebSocket is now closed by: ${reason}`);
     };
 
     showQrCode = qrCode => {
@@ -160,8 +160,6 @@
         size: 300,
         value: `https://bogusapp.herokuapp.com/mobile-camera?qrCode=${qrCode}`
       });
-
-      console.log(`HERE'S MY QR CODE: ${qrCode}`);
     };
 
     loginUser = username => {
@@ -176,7 +174,9 @@
       gameElement.style.display = "block";
 
       // You can now close the websocket.
-      connection.close();
+      connection.close(1000, 'client');
+
+      console.log(`Logged in user from server: ${username}`);
     };
   </script>
 </body>

@@ -7,8 +7,8 @@ export const WebSocketActions = {
 };
 
 export const ErrorMessages = {
-  invalidQRCode: "Aiya, there's a problem with your QR code! Scan again!",
-  genericError: "There's a problem"
+  invalidQRCode: "Opps, there's a problem with your QR code! Scan again! 😳",
+  genericError: "Opps, there's an error 😳"
 };
 
 export const SuccessMessages = {
