@@ -23,4 +23,5 @@ Just scan the QR code using your iPhone camera or Qr code reader, that should wo
 
 ## FAQ
 
-Just for fun.
+Q: Why?
+A: Just for fun.

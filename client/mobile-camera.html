@@ -74,13 +74,12 @@
           }
 
           // There's no retrying for this page so we can close the connection
-          // Send close code with requester name
           // To know more on close status code: https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent#Status_codes
-          connection.close(1000, "client");
+          connection.close(1000);
         };
 
         connection.onclose = event => {
-          console.log(`WebSocket is closed by ${event.reason}`);
+          console.log(`WebSocket is closed, code: ${event.code}`);
         };
       };
 

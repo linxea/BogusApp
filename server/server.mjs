@@ -4,7 +4,11 @@ import express from "express";
 import WebSocket from "ws";
 import uuidv4 from "uuid/v4";
 import path from "path";
-import { WebSocketActions, ErrorMessages, SuccessMessages } from "./enums.mjs";
+import {
+  WebSocketActions,
+  ErrorMessages,
+  SuccessMessages
+} from "./utils/enums.mjs";
 
 const app = express();
 const server = http.createServer(app);
@@ -17,16 +21,20 @@ const __dirname = path.resolve();
 // Use process.env.PORT because heroku defines its own PORT
 const port = process.env.PORT || 8080;
 
-app.get("/", (req, res) => res.sendFile(__dirname + "/index.html"));
-app.get("/web", (req, res) => res.sendFile(__dirname + "/web.html"));
+app.get("/", (req, res) => res.sendFile(__dirname + "/client/index.html"));
+app.get("/web", (req, res) => res.sendFile(__dirname + "/client/web.html"));
 app.get("/mobile-camera", (req, res) =>
-  res.sendFile(__dirname + "/mobile-camera.html")
+  res.sendFile(__dirname + "/client/mobile-camera.html")
 );
-app.get("/mobile", (req, res) => res.sendFile(__dirname + "/mobile.html"));
+app.get("/mobile", (req, res) =>
+  res.sendFile(__dirname + "/client/mobile.html")
+);
+
+// Serve libraries in public folder over /static path
 app.use("/static", express.static("public"));
 
 // Everything else should go to 404 because we simply don't care
-app.get("*", (req, res) => res.sendFile(__dirname + "/404.html"));
+app.get("*", (req, res) => res.sendFile(__dirname + "/client/404.html"));
 
 server.listen(port, () => console.log(`Server listening on port ${port}!`));
 
@@ -94,12 +102,16 @@ wss.on("connection", ws => {
     }
   });
 
-  ws.on("close", (code, reason) => {
+  ws.on("close", code => {
     validQRCodes.splice([validQRCodes.indexOf(uuid)], 1);
     delete webSocketConnections[uuid];
     console.log(
-      `Websocket connection is closed, status code ${code}, request: ${reason}, uuid: ${uuid}`
+      `Websocket connection is closed, status code: ${code}, uuid: ${uuid}`
     );
+  });
+
+  ws.on("error", error => {
+    console.log(`Websocket connection error: ${error}`);
   });
 });
 

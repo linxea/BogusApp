@@ -2,10 +2,10 @@
   "name": "bogusapp",
   "version": "1.0.0",
   "description": "Mobile to web login using QR code",
-  "main": "server.js",
+  "main": "server/server.js",
   "scripts": {
-    "start": "node --experimental-modules server.mjs",
-    "start-dev": "nodemon --experimental-modules server.mjs"
+    "start": "node --experimental-modules ./server/server.mjs",
+    "start-dev": "nodemon --experimental-modules ./server/server.mjs"
   },
   "engines": {
     "node": "8.9.3"
