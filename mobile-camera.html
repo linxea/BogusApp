@@ -30,22 +30,22 @@
   </head>
 
   <body>
-    <h1 id="message">logging you in from da camera...</h1>
+    <h1 id="message">logging you in from your camera...</h1>
     <script type="text/javascript">
-      (function() {
+      (() => {
         if (location.search.split("?qrCode=").length > 1) {
           const qrCode = location.search.split("?qrCode=")[1];
           requestQRCodeLogin(qrCode);
         }
       })();
 
-      function requestQRCodeLogin(qrCode) {
-        // Use localUrl if you are testing locally
-        // For example, `const connection = new WebSocket(localUrl);`
-
-        const localUrl = "ws://localhost:8080";
-        const url = "wss://bogusapp.herokuapp.com";
+      requestQRCodeLogin = qrCode => {
+        const host = location.host;
+        const isLocal = host.includes("localhost");
+        const webSocketUri = `ws${isLocal ? "" : "s"}`;
+        const url = `${webSocketUri}://${host}`;
         const connection = new WebSocket(url);
+
         connection.onopen = () => {
           const payload = {
             action: "validateQRCode",
@@ -87,7 +87,7 @@
         connection.onclose = () => {
           console.log("WebSocket is closed.");
         };
-      }
+      };
     </script>
   </body>
 </html>

@@ -85,16 +85,13 @@
       <h1>Scan Code</h1>
       <p>
         Go to
-        <a
-          href="https://bogusapp.herokuapp.com/web"
-          target="_blank"
-          rel="noopener noreferrer"
+        <a href="./web" target="_blank" rel="noopener noreferrer"
           ><strong>https://bogusapp.herokuapp.com/web</strong></a
         >
-        on your computer and scan the QR code
+        on your computer and scan the QR code.
       </p>
       <div id="loadingMessage">
-        🎥 Unable to camera. If you are using iPhone, please use Safari.
+        🎥 Unable to use camera. If you are using iPhone, please use Safari.
       </div>
       <canvas id="qrCodeReader" hidden></canvas>
       <input type="text" id="name" placeholder="Enter Your Name, Stranger" />
@@ -103,13 +100,13 @@
     <script type="text/javascript">
       const usedQRCodes = [];
 
-      //  QR Code Scanner from https://github.com/cozmo/jsQR
+      // QR Code Scanner from https://github.com/cozmo/jsQR
       const video = document.createElement("video");
       const canvasElement = document.getElementById("qrCodeReader");
       const canvas = canvasElement.getContext("2d");
       const loadingMessage = document.getElementById("loadingMessage");
 
-      // Use facingMode: environment to attemt to get the front camera on phones
+      // Use facingMode: environment to attempt to get the front camera on phones
       navigator.mediaDevices
         .getUserMedia({ video: { facingMode: "environment" } })
         .then(function(stream) {
@@ -158,10 +155,10 @@
       };
 
       requestQRCodeLogin = qrCode => {
-        // Use localUrl if you are testing locally
-        // For example, `const connection = new WebSocket(localUrl);`
-        const localUrl = "ws://localhost:8080";
-        const url = "wss://bogusapp.herokuapp.com";
+        const host = location.host;
+        const isLocal = host.includes("localhost");
+        const webSocketUri = `ws${isLocal ? "" : "s"}`;
+        const url = `${webSocketUri}://${host}`;
         const connection = new WebSocket(url);
 
         connection.onopen = () => {

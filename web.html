@@ -90,10 +90,10 @@
   <div id="scan-section">
     <h2>To use BogusApp on your computer:</h1>
       <ol>
-        <li>Go to <a href="https://bogusapp.herokuapp.com/mobile" target="_blank"
+        <li>Go to <a href="./mobile" target="_blank"
             rel="noopener noreferrer"><strong>https://bogusapp.herokuapp.com/mobile</strong></a></li>
-        <li>Enter your name in the website and point the camera to this screen</li>
-        <li>If you are feeling curious, use your iPhone camera or a QR Code reader 😅</li>
+        <li>Enter your name in the website and point your camera to this screen</li>
+        <li>If you are bored, try using your iPhone camera or a QR Code reader 😅</li>
       </ol>
       <div class="qrCode">
         <canvas id="qrCode"></canvas>
@@ -102,11 +102,10 @@
 
   <script src="./static/qrious.min.js"></script>
   <script type="text/javascript">
-    // Use localUrl if you are testing locally
-    // For example, `const connection = new WebSocket(localUrl);`
-
-    const localUrl = "ws://localhost:8080";
-    const url = "wss://bogusapp.herokuapp.com";
+    const host = location.host;
+    const isLocal = host.includes("localhost");
+    const webSocketUri = `ws${isLocal ? "" : "s"}`;
+    const url = `${webSocketUri}://${host}`;
     const connection = new WebSocket(url);
 
     connection.onopen = () => {
